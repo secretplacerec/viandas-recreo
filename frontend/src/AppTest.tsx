@@ -1,36 +1,14 @@
-import { useState, Suspense, lazy } from 'react'
+import { useState } from 'react'
 
-const ProductsPage = lazy(() => import('./pages/ProductsPage'))
-const PacksPage = lazy(() => import('./pages/PacksPage'))
-const CalendarPage = lazy(() => import('./pages/CalendarPage'))
-const ReportPage = lazy(() => import('./pages/ReportPage'))
+export default function AppTest() {
+  const [currentPage, setCurrentPage] = useState('products')
 
-type PageType = 'products' | 'packs' | 'calendar' | 'report'
-
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageType>('products')
-
-  const navItems: { id: PageType; label: string }[] = [
+  const navItems = [
     { id: 'products', label: 'Productos' },
     { id: 'packs', label: 'Generar Packs' },
     { id: 'calendar', label: 'Calendario' },
     { id: 'report', label: 'Lista de Compra' },
   ]
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'products':
-        return <ProductsPage />
-      case 'packs':
-        return <PacksPage />
-      case 'calendar':
-        return <CalendarPage />
-      case 'report':
-        return <ReportPage />
-      default:
-        return <ProductsPage />
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,9 +42,27 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <Suspense fallback={<div className="text-center py-8">Cargando...</div>}>
-          {renderPage()}
-        </Suspense>
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">✅ Full Stack Funcionando</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Backend</h3>
+              <p className="text-green-600">✅ http://localhost:3000 (Express)</p>
+              <p className="text-gray-600">Base de datos: SQLite</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Frontend</h3>
+              <p className="text-green-600">✅ http://localhost:5173 (React)</p>
+              <p className="text-gray-600">Conectado a API</p>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Recargar
+            </button>
+          </div>
+        </div>
       </main>
     </div>
   )

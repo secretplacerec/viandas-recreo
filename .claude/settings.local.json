@@ -10,7 +10,8 @@
       "Bash(mkdir -p \"D:\\\\00 - Claude\\\\Viandas Recreo\\\\backend\\\\prisma\" && mkdir -p \"D:\\\\00 - Claude\\\\Viandas Recreo\\\\backend\\\\src\\\\{routes,services,middleware}\")",
       "Bash(npm run *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(timeout 5 npm run dev)"
     ]
   }
 }

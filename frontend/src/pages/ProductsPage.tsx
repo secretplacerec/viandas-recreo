@@ -3,26 +3,33 @@ import { Product } from '../types'
 import ProductForm from '../components/ProductForm'
 import { productService } from '../services/api'
 
+console.log('ProductsPage loaded')
+
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('ProductsPage useEffect running')
     loadProducts()
   }, [])
 
   const loadProducts = async () => {
     try {
+      console.log('Loading products...')
       setLoading(true)
-      const data = await productService.getAll()
-      setProducts(data)
       setError(null)
-    } catch (err) {
-      setError('Error al cargar productos')
-      console.error(err)
-    } finally {
+      console.log('Calling productService.getAll()')
+      const data = await productService.getAll()
+      console.log('Got data:', data)
+      setProducts(Array.isArray(data) ? data : [])
+      setLoading(false)
+    } catch (err: any) {
+      console.error('Error in loadProducts:', err)
+      setError(`Error: ${err?.message || String(err)}`)
+      setProducts([])
       setLoading(false)
     }
   }
