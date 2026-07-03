@@ -17,33 +17,67 @@ App para capturar qué snacks le gustaría comer a tu hijo en los recreos de la 
 - **React 18** + TypeScript
 - **Vite** para desarrollo rápido
 - **TailwindCSS** para estilos
+- **Axios** para llamadas API
 - **Responsive Design** (funciona en desktop y mobile)
 
-### Almacenamiento
-- **LocalStorage** para persistencia de datos en el navegador
+### Backend
+- **Node.js** + Express
+- **TypeScript**
+- **Prisma ORM** con SQLite
+- **CORS** para conectar frontend y backend
+
+### Base de Datos
+- **SQLite** (simple, sin configuración)
 
 ## Instalación y Uso
 
-### 1. Instalar dependencias
+### 1. Instalar dependencias (ambos)
 
 ```bash
+# Frontend
 cd frontend
+npm install
+
+# Backend
+cd ../backend
 npm install
 ```
 
-### 2. Ejecutar en desarrollo
+### 2. Inicializar base de datos (backend)
 
 ```bash
-npm run dev
+# En la carpeta backend/
+npm run prisma:migrate
 ```
 
-La app abrirá en `http://localhost:5173`
+### 3. Ejecutar en desarrollo
 
-### 3. Build para producción
+**Terminal 1 - Backend:**
+```bash
+cd backend
+npm run dev
+# Corre en http://localhost:3000
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+# Abre http://localhost:5173
+```
+
+### 4. Build para producción
 
 ```bash
+# Frontend
+cd frontend
 npm run build
 npm run preview
+
+# Backend
+cd backend
+npm run build
+npm run start
 ```
 
 ## Cómo usar la app
@@ -78,36 +112,81 @@ npm run preview
 
 ```
 viandas-recreo/
-├── frontend/
+├── frontend/                    # App web con React
 │   ├── src/
-│   │   ├── pages/           # Páginas principales
-│   │   ├── components/      # Componentes reutilizables
-│   │   ├── types/           # Tipos TypeScript
-│   │   ├── utils/           # Funciones de lógica
-│   │   ├── App.tsx          # Componente principal
-│   │   └── main.tsx         # Punto de entrada
+│   │   ├── pages/              # ProductsPage, PacksPage, CalendarPage, ReportPage
+│   │   ├── components/         # ProductForm, PackEditor
+│   │   ├── services/           # api.ts (cliente Axios)
+│   │   ├── types/              # Definiciones de tipos TypeScript
+│   │   ├── utils/              # packGenerator, calculations
+│   │   ├── App.tsx             # Router simple
+│   │   └── main.tsx
 │   ├── index.html
 │   ├── package.json
-│   └── vite.config.ts
+│   ├── vite.config.ts
+│   └── tailwind.config.js
+├── backend/                     # API REST con Express
+│   ├── src/
+│   │   ├── routes/             # products.ts, packs.ts, reports.ts
+│   │   ├── services/           # productService, packService, reportService
+│   │   ├── lib/                # prisma.ts
+│   │   └── server.ts           # Servidor Express
+│   ├── prisma/
+│   │   ├── schema.prisma       # Definición de modelos
+│   │   ├── dev.db              # Base de datos SQLite
+│   │   └── migrations/         # Migraciones automáticas
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── .env                    # Configuración (DATABASE_URL, PORT)
 └── README.md
 ```
 
-## Datos Guardados
+## API Endpoints
 
-Todos los datos se guardan automáticamente en **localStorage** del navegador:
-- `products`: Lista de productos
-- `packs`: Packs generados
+### Productos
+- `GET /api/products` - Listar todos
+- `POST /api/products` - Crear
+- `PUT /api/products/:id` - Actualizar
+- `DELETE /api/products/:id` - Eliminar
 
-⚠️ Si limpias el localStorage o cambias de navegador, perderás los datos. Exporta a CSV para hacer backup.
+### Packs
+- `GET /api/packs` - Listar todos con items
+- `GET /api/packs/:id` - Obtener uno
+- `POST /api/packs/generate` - Generar 60 packs automáticamente
+- `PUT /api/packs/:id` - Actualizar items del pack
+
+### Reportes
+- `GET /api/reports/totals` - Obtener lista de compra consolidada
+- `GET /api/reports/csv` - Descargar CSV
+
+## Persistencia de Datos
+
+Los datos se guardan en **SQLite** en `backend/prisma/dev.db`:
+- Productos con nombre, unidad y peso
+- 60 packs distribuidos por día/semana
+- Items de cada pack con productos y cantidades
+
+✅ Los datos persisten incluso si reinician el servidor.
+
+## Características Implementadas
+
+- ✅ Backend con API REST
+- ✅ Base de datos SQLite con Prisma
+- ✅ Generación automática de 60 packs
+- ✅ Edición flexible de packs
+- ✅ Cálculo de totales en gramos/unidades
+- ✅ Exportación a CSV
+- ✅ Interfaz web responsive
 
 ## Características Futuras
 
-- [ ] Backend con API REST
-- [ ] Base de datos SQLite
-- [ ] Exportar a PDF
+- [ ] Exportar a PDF con diseño
 - [ ] Soporte para múltiples hijos
-- [ ] Historial de compras
-- [ ] Sugerencias de cantidad a comprar
+- [ ] Historial de compras anteriores
+- [ ] Sugerencias de cantidad a comprar (ej: "1 bolsa de 1kg")
+- [ ] Análisis de gastos por mes
+- [ ] API key para proteger endpoints
+- [ ] Autenticación de usuarios
 
 ## Licencia
 
