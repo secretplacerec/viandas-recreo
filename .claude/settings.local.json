@@ -12,7 +12,10 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(timeout 5 npm run dev)",
-      "Bash(npx cap *)"
+      "Bash(npx cap *)",
+      "Bash(java -version)",
+      "Bash(./gradlew --version)",
+      "Bash(./gradlew assembleDebug)"
     ]
   }
 }
