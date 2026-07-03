@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Product, Pack, ShoppingItem } from '../types'
+import { Product } from '../types'
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api'
 

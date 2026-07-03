@@ -56,7 +56,7 @@ export default function CalendarPage() {
     setPacks(
       packs.map((p) => {
         if (p.id === packId) {
-          return { ...p, items: p.items.filter((i) => i.id !== itemId) }
+          return { ...p, items: p.items.filter((i: any) => i.id !== itemId) }
         }
         return p
       })
@@ -178,7 +178,7 @@ export default function CalendarPage() {
               <div>
                 <h4 className="font-bold text-gray-900 mb-2">Productos</h4>
                 <div className="space-y-2">
-                  {selectedPack.items.map((item) => (
+                  {selectedPack.items.map((item: any) => (
                     <div
                       key={item.id}
                       className="flex justify-between items-center bg-gray-50 p-2 rounded"

@@ -177,6 +177,60 @@ Los datos se guardan en **SQLite** en `backend/prisma/dev.db`:
 - ✅ Cálculo de totales en gramos/unidades
 - ✅ Exportación a CSV
 - ✅ Interfaz web responsive
+- ✅ Empaquetado como APK (Android)
+
+## 📱 Generar APK (Android)
+
+La aplicación está preparada para ser empaquetada como APK usando Capacitor.
+
+### Requisitos Previos
+- Java Development Kit (JDK 17+)
+- Android SDK
+- Gradle
+- Node.js y npm
+
+### Generar APK (Forma Rápida)
+
+**Windows:**
+```bash
+# Desde el directorio raíz del proyecto
+build_apk.bat
+```
+
+**Mac/Linux:**
+```bash
+chmod +x build_apk.sh
+./build_apk.sh
+```
+
+### Generar APK (Manual)
+
+```bash
+# 1. Compilar frontend
+cd frontend
+npm run build
+
+# 2. Sincronizar con Android
+npx cap sync android
+
+# 3. Generar APK
+cd android
+./gradlew assembleDebug
+
+# APK estará en: app/build/outputs/apk/debug/app-debug.apk
+```
+
+### Instalar en Dispositivo
+
+```bash
+# Asegúrate de que tienes un dispositivo conectado
+adb devices
+
+# Instalar
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+**Para más detalles:** ver `APK_BUILD_GUIDE.md`
 
 ## Características Futuras
 
