@@ -1,32 +1,49 @@
 import { useState, useEffect } from 'react'
-import { Product, Pack } from '../types'
-import { generateMonthPacks } from '../utils/packGenerator'
+import { packService, productService } from '../services/api'
 
 export default function PacksPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [packs, setPacks] = useState<Pack[]>([])
+  const [productCount, setProductCount] = useState(0)
+  const [packs, setPacks] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [generated, setGenerated] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem('products')
-    if (saved) setProducts(JSON.parse(saved))
+    loadInitialData()
   }, [])
 
-  const handleGenerate = () => {
-    if (products.length === 0) {
+  const loadInitialData = async () => {
+    try {
+      const products = await productService.getAll()
+      setProductCount(products.length)
+      const existingPacks = await packService.getAll()
+      if (existingPacks.length > 0) {
+        setPacks(existingPacks)
+        setGenerated(true)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleGenerate = async () => {
+    if (productCount === 0) {
       alert('Debes agregar productos primero')
       return
     }
 
-    const newPacks = generateMonthPacks(products)
-    setPacks(newPacks)
-    localStorage.setItem('packs', JSON.stringify(newPacks))
-    setGenerated(true)
-  }
-
-  const handleSave = () => {
-    localStorage.setItem('packs', JSON.stringify(packs))
-    alert('Packs guardados correctamente')
+    try {
+      setLoading(true)
+      setError(null)
+      const newPacks = await packService.generate()
+      setPacks(newPacks)
+      setGenerated(true)
+    } catch (err) {
+      setError('Error al generar packs. Verifica que el backend esté corriendo.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -36,14 +53,25 @@ export default function PacksPage() {
           Generar Packs Automáticamente
         </h2>
         <p className="text-gray-600 mb-6">
-          Se crearán 60 packs (20 días × 3 recreos) distribuyendo los {products.length} productos
+          Se crearán 60 packs (20 días × 3 recreos) distribuyendo los {productCount} productos
           disponibles de forma variada.
         </p>
+
+        {error && (
+          <div className="bg-red-50 p-3 rounded mb-4 border border-red-200">
+            <p className="text-red-600 text-sm">{error}</p>
+            <p className="text-red-500 text-xs mt-1">
+              💡 Asegúrate de ejecutar el backend con: cd backend && npm install && npm run prisma:migrate && npm run dev
+            </p>
+          </div>
+        )}
+
         <button
           onClick={handleGenerate}
-          className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium"
+          disabled={loading}
+          className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium disabled:opacity-50"
         >
-          🎲 Generar Packs para el Mes
+          {loading ? '⏳ Generando...' : '🎲 Generar Packs para el Mes'}
         </button>
       </div>
 
@@ -66,7 +94,7 @@ export default function PacksPage() {
                     Día {pack.day} - Pack {pack.packNum}
                   </div>
                   <div className="space-y-1">
-                    {pack.items.map((item, idx) => (
+                    {pack.items.map((item: any, idx: number) => (
                       <div key={idx} className="text-sm text-gray-600">
                         • {item.product.name} (x{item.quantity})
                       </div>
@@ -80,15 +108,6 @@ export default function PacksPage() {
                 ... y {packs.length - 6} packs más
               </p>
             )}
-          </div>
-
-          <div className="mt-6 flex space-x-3">
-            <button
-              onClick={handleSave}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              💾 Guardar Packs
-            </button>
           </div>
         </div>
       )}

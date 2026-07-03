@@ -1,25 +1,40 @@
 import { useState, useEffect } from 'react'
-import { Pack, Product } from '../types'
-
-interface EditingState {
-  packId: string
-  productId: string
-}
+import { packService, productService } from '../services/api'
 
 export default function CalendarPage() {
-  const [packs, setPacks] = useState<Pack[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [selectedPack, setSelectedPack] = useState<Pack | null>(null)
+  const [packs, setPacks] = useState<any[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [selectedPack, setSelectedPack] = useState<any | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const savedPacks = localStorage.getItem('packs')
-    const savedProducts = localStorage.getItem('products')
-    if (savedPacks) setPacks(JSON.parse(savedPacks))
-    if (savedProducts) setProducts(JSON.parse(savedProducts))
+    loadData()
   }, [])
 
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [packsData, productsData] = await Promise.all([
+        packService.getAll(),
+        productService.getAll()
+      ])
+      setPacks(packsData)
+      setProducts(productsData)
+      setError(null)
+    } catch (err) {
+      setError('Error al cargar datos')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleAddItem = (packId: string, productId: string) => {
+    const product = products.find((p) => p.id === productId)
+    if (!product) return
+
     setPacks(
       packs.map((p) => {
         if (p.id === packId) {
@@ -27,7 +42,7 @@ export default function CalendarPage() {
             id: `${packId}-${Date.now()}`,
             packId,
             productId,
-            product: products.find((pr) => pr.id === productId)!,
+            product,
             quantity: 1,
           }
           return { ...p, items: [...p.items, newItem] }
@@ -48,10 +63,19 @@ export default function CalendarPage() {
     )
   }
 
-  const handleSave = () => {
-    localStorage.setItem('packs', JSON.stringify(packs))
-    alert('Cambios guardados')
-    setShowModal(false)
+  const handleSave = async () => {
+    try {
+      if (selectedPack) {
+        await packService.update(selectedPack.id, selectedPack.items)
+        setError(null)
+      }
+      alert('Cambios guardados')
+      setShowModal(false)
+      await loadData()
+    } catch (err) {
+      setError('Error al guardar cambios')
+      console.error(err)
+    }
   }
 
   const weeks = [1, 2, 3, 4]
@@ -69,7 +93,17 @@ export default function CalendarPage() {
         </p>
       </div>
 
-      {packs.length === 0 ? (
+      {error && (
+        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-gray-500">Cargando calendario...</p>
+        </div>
+      ) : packs.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center">
           <p className="text-gray-500">
             No hay packs generados. Ve a "Generar Packs" primero.

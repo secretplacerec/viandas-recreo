@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  unitType  String   // "gramos", "unidades", "ml"
+  weight    Float    // peso/cantidad por unidad
+  createdAt DateTime @default(now())
+
+  packItems PackItem[]
+
+  @@index([name])
+}
+
+model Pack {
+  id        String   @id @default(cuid())
+  day       Int      // 1-20 (días hábiles del mes)
+  weekNum   Int      // 1-4 (semana del mes)
+  packNum   Int      // 1, 2, 3 (recreo del día)
+  items     PackItem[]
+  createdAt DateTime @default(now())
+
+  @@unique([day, packNum])
+  @@index([day])
+  @@index([weekNum])
+}
+
+model PackItem {
+  id        String  @id @default(cuid())
+  packId    String
+  pack      Pack    @relation(fields: [packId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity  Int     @default(1)
+
+  @@unique([packId, productId])
+  @@index([productId])
+}
+
+model MonthConfig {
+  id        String  @id @default(cuid())
+  year      Int
+  month     Int
+  workDays  Int     @default(20)
+  packsPerDay Int   @default(3)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([year, month])
+}

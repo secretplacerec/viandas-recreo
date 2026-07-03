@@ -1,34 +1,51 @@
 import { useState, useEffect } from 'react'
 import { Product } from '../types'
 import ProductForm from '../components/ProductForm'
+import { productService } from '../services/api'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const saved = localStorage.getItem('products')
-    if (saved) setProducts(JSON.parse(saved))
+    loadProducts()
   }, [])
 
-  const saveProducts = (newProducts: Product[]) => {
-    setProducts(newProducts)
-    localStorage.setItem('products', JSON.stringify(newProducts))
-  }
-
-  const handleAdd = (product: Omit<Product, 'id' | 'createdAt'>) => {
-    const newProduct: Product = {
-      ...product,
-      id: Date.now().toString(),
-      createdAt: new Date(),
+  const loadProducts = async () => {
+    try {
+      setLoading(true)
+      const data = await productService.getAll()
+      setProducts(data)
+      setError(null)
+    } catch (err) {
+      setError('Error al cargar productos')
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
-    saveProducts([...products, newProduct])
-    setShowForm(false)
   }
 
-  const handleDelete = (id: string) => {
-    saveProducts(products.filter((p) => p.id !== id))
+  const handleAdd = async (product: Omit<Product, 'id' | 'createdAt'>) => {
+    try {
+      await productService.create(product)
+      await loadProducts()
+      setShowForm(false)
+    } catch (err) {
+      setError('Error al agregar producto')
+      console.error(err)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      await productService.delete(id)
+      await loadProducts()
+    } catch (err) {
+      setError('Error al eliminar producto')
+      console.error(err)
+    }
   }
 
   return (
@@ -41,15 +58,18 @@ export default function ProductsPage() {
           </p>
         </div>
         <button
-          onClick={() => {
-            setEditingId(null)
-            setShowForm(!showForm)
-          }}
+          onClick={() => setShowForm(!showForm)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
           + Agregar Producto
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
 
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow">
@@ -60,7 +80,11 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {products.length === 0 ? (
+      {loading ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-gray-500">Cargando productos...</p>
+        </div>
+      ) : products.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center">
           <p className="text-gray-500">
             No hay productos. Agrega algunos para empezar.
