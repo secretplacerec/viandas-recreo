@@ -1,9 +1,8 @@
-import { useState, Suspense, lazy } from 'react'
-
-const ProductsPage = lazy(() => import('./pages/ProductsPage'))
-const PacksPage = lazy(() => import('./pages/PacksPage'))
-const CalendarPage = lazy(() => import('./pages/CalendarPage'))
-const ReportPage = lazy(() => import('./pages/ReportPage'))
+import { useState } from 'react'
+import ProductsPage from './pages/ProductsPage'
+import PacksPage from './pages/PacksPage'
+import CalendarPage from './pages/CalendarPage'
+import ReportPage from './pages/ReportPage'
 
 type PageType = 'products' | 'packs' | 'calendar' | 'report'
 
@@ -16,21 +15,6 @@ export default function App() {
     { id: 'calendar', label: 'Calendario' },
     { id: 'report', label: 'Lista de Compra' },
   ]
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'products':
-        return <ProductsPage />
-      case 'packs':
-        return <PacksPage />
-      case 'calendar':
-        return <CalendarPage />
-      case 'report':
-        return <ReportPage />
-      default:
-        return <ProductsPage />
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,9 +48,10 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <Suspense fallback={<div className="text-center py-8">Cargando...</div>}>
-          {renderPage()}
-        </Suspense>
+        {currentPage === 'products' && <ProductsPage />}
+        {currentPage === 'packs' && <PacksPage />}
+        {currentPage === 'calendar' && <CalendarPage />}
+        {currentPage === 'report' && <ReportPage />}
       </main>
     </div>
   )

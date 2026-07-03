@@ -15,7 +15,20 @@
       "Bash(npx cap *)",
       "Bash(java -version)",
       "Bash(./gradlew --version)",
-      "Bash(./gradlew assembleDebug)"
+      "Bash(./gradlew assembleDebug)",
+      "Bash(git config *)",
+      "Bash(git push *)",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "Bash(mkdir -p \"/c/Users/SecretPlace/Downloads/logs_extracted\")",
+      "Read(//c/Users/SecretPlace/Downloads/**)",
+      "Bash(unzip -o \"/c/Users/SecretPlace/Downloads/logs_77473267749.zip\")",
+      "Bash(cd \"/c/Users/SecretPlace/Downloads/logs_extracted\" && cat \"0_build.txt\" | head -5 && echo \"---FILES---\" && ls -la build/)",
+      "Bash(rm -rf \"/c/Users/SecretPlace/Downloads/logs_extracted2\")",
+      "Bash(mkdir -p \"/c/Users/SecretPlace/Downloads/logs_extracted2\")",
+      "Bash(unzip -o \"/c/Users/SecretPlace/Downloads/logs_77480977934.zip\")",
+      "Bash(cd \"/c/Users/SecretPlace/Downloads/logs_extracted2/build\" && tail -30 \"9_Build APK.txt\" && echo \"===UPLOAD===\" && cat \"10_Run actions_upload-artifact@v4.txt\")",
+      "Bash(ipconfig)",
+      "Bash(git restore *)"
     ]
   }
 }

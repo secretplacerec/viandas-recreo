@@ -1,47 +1,39 @@
 import { useState, useEffect } from 'react'
-import { ShoppingItem } from '../types'
-import { reportService } from '../services/api'
-
-function formatQuantity(item: ShoppingItem): string {
-  if (item.product.unitType === 'unidades') {
-    return `${item.totalUnits || 0} unidades`
-  } else if (item.product.unitType === 'ml') {
-    return `${item.totalGrams || 0} ml`
-  } else {
-    return `${item.totalGrams || 0} g`
-  }
-}
+import { Pack, ShoppingItem } from '../types'
+import { calculateTotals, formatQuantity } from '../utils/calculations'
 
 export default function ReportPage() {
+  const [packs, setPacks] = useState<Pack[]>([])
   const [totals, setTotals] = useState<ShoppingItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadTotals()
+    const saved = localStorage.getItem('packs')
+    if (saved) {
+      const parsedPacks = JSON.parse(saved)
+      setPacks(parsedPacks)
+      setTotals(calculateTotals(parsedPacks))
+    }
   }, [])
 
-  const loadTotals = async () => {
-    try {
-      setLoading(true)
-      const data = await reportService.getTotals()
-      setTotals(data)
-      setError(null)
-    } catch (err) {
-      setError('Error al cargar lista de compra')
-      console.error(err)
-    } finally {
-      setLoading(false)
+  const handleExportCSV = () => {
+    if (totals.length === 0) {
+      alert('No hay datos para exportar')
+      return
     }
-  }
 
-  const handleExportCSV = async () => {
-    try {
-      await reportService.exportCSV()
-    } catch (err) {
-      setError('Error al exportar CSV')
-      console.error(err)
-    }
+    let csv = 'Producto,Unidad,Cantidad\n'
+    totals.forEach((item) => {
+      const quantity = formatQuantity(item)
+      csv += `"${item.product.name}","${item.product.unitType}","${quantity}"\n`
+    })
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `lista-compra-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const handlePrint = () => {
@@ -75,26 +67,20 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {error && (
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <p className="text-red-600">{error}</p>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-gray-500">Cargando lista de compra...</p>
-        </div>
-      ) : totals.length === 0 ? (
+      {packs.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center">
           <p className="text-gray-500">
             No hay packs generados. Ve a "Generar Packs" primero.
           </p>
         </div>
+      ) : totals.length === 0 ? (
+        <div className="bg-white p-8 rounded-lg shadow text-center">
+          <p className="text-gray-500">No hay datos en los packs.</p>
+        </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 print:bg-gray-100">
+            <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Producto
@@ -109,7 +95,7 @@ export default function ReportPage() {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {totals.map((item) => (
-                <tr key={item.productId} className="hover:bg-gray-50 print:hover:bg-transparent">
+                <tr key={item.productId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {item.product.name}
                   </td>
@@ -125,14 +111,6 @@ export default function ReportPage() {
           </table>
         </div>
       )}
-
-      <style>{`
-        @media print {
-          body * { visibility: hidden; }
-          .print\\:table, .print\\:table * { visibility: visible; }
-          .print\\:overflow-x-auto { overflow: visible; }
-        }
-      `}</style>
     </div>
   )
 }

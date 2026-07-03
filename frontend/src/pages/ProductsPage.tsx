@@ -1,58 +1,33 @@
 import { useState, useEffect } from 'react'
 import { Product } from '../types'
 import ProductForm from '../components/ProductForm'
-import { productService } from '../services/api'
-
-console.log('ProductsPage loaded')
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [showForm, setShowForm] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    console.log('ProductsPage useEffect running')
-    loadProducts()
+    const saved = localStorage.getItem('products')
+    if (saved) setProducts(JSON.parse(saved))
   }, [])
 
-  const loadProducts = async () => {
-    try {
-      console.log('Loading products...')
-      setLoading(true)
-      setError(null)
-      console.log('Calling productService.getAll()')
-      const data = await productService.getAll()
-      console.log('Got data:', data)
-      setProducts(Array.isArray(data) ? data : [])
-      setLoading(false)
-    } catch (err: any) {
-      console.error('Error in loadProducts:', err)
-      setError(`Error: ${err?.message || String(err)}`)
-      setProducts([])
-      setLoading(false)
-    }
+  const saveProducts = (newProducts: Product[]) => {
+    setProducts(newProducts)
+    localStorage.setItem('products', JSON.stringify(newProducts))
   }
 
-  const handleAdd = async (product: Omit<Product, 'id' | 'createdAt'>) => {
-    try {
-      await productService.create(product)
-      await loadProducts()
-      setShowForm(false)
-    } catch (err) {
-      setError('Error al agregar producto')
-      console.error(err)
+  const handleAdd = (product: Omit<Product, 'id' | 'createdAt'>) => {
+    const newProduct: Product = {
+      ...product,
+      id: Date.now().toString(),
+      createdAt: new Date(),
     }
+    saveProducts([...products, newProduct])
+    setShowForm(false)
   }
 
-  const handleDelete = async (id: string) => {
-    try {
-      await productService.delete(id)
-      await loadProducts()
-    } catch (err) {
-      setError('Error al eliminar producto')
-      console.error(err)
-    }
+  const handleDelete = (id: string) => {
+    saveProducts(products.filter((p) => p.id !== id))
   }
 
   return (
@@ -72,12 +47,6 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-          <p className="text-red-600">{error}</p>
-        </div>
-      )}
-
       {showForm && (
         <div className="bg-white p-6 rounded-lg shadow">
           <ProductForm
@@ -87,11 +56,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {loading ? (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-gray-500">Cargando productos...</p>
-        </div>
-      ) : products.length === 0 ? (
+      {products.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow text-center">
           <p className="text-gray-500">
             No hay productos. Agrega algunos para empezar.
