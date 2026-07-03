@@ -23,11 +23,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - uses: android-actions/setup-android@v3
-
-      - name: Install required Android SDK packages
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
-
       - name: Install frontend dependencies
         run: cd frontend && npm install
 
@@ -47,6 +42,15 @@ jobs:
           ./gradlew assembleDebug --stacktrace
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: viandas-recreo-debug
           path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: gradle-build-report
+          path: frontend/android/build/reports/
+          if-no-files-found: ignore
