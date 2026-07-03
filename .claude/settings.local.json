@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init *)",
+      "Bash(mkdir -p frontend backend)",
+      "Bash(echo \"App para gestionar packs de viandas escolares\")",
+      "Bash(npm install *)",
+      "Bash(mkdir -p \"D:\\\\00 - Claude\\\\Viandas Recreo\\\\.claude\")"
+    ]
+  }
+}
